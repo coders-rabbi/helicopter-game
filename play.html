@@ -2,34 +2,63 @@
 <html lang="bn">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0e131b">
   <title>হেলিকপ্টার গেইম</title>
   <style>
 :root{--bg:#eef1f5;--fg:#16202e;--muted:#5a6678;--accent:#ffb43a}
 @media (prefers-color-scheme:dark){:root{--bg:#0e131b;--fg:#e8edf4;--muted:#8d9bb0}}
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:16px}
 .stage{width:100%;max-width:800px;display:flex;flex-direction:column;gap:10px}
 h1{margin:0;font-size:1.4rem}
 .hud{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .frame{position:relative}
 canvas{width:100%;height:auto;aspect-ratio:2/1;display:block;border-radius:10px;touch-action:none}
-.overlay{position:absolute;inset:0;border-radius:10px;background:rgba(10,16,26,.78);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px}
+.overlay{z-index:3;position:absolute;inset:0;border-radius:10px;background:rgba(10,16,26,.78);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px}
 .overlay[hidden]{display:none}
 .overlay h2{margin:0;font-size:1.8rem}
-.overlay p{margin:0;max-width:36ch}
+.overlay p{margin:0;max-width:36ch;white-space:pre-line}
 .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-button{font:inherit;cursor:pointer;border-radius:8px;padding:10px 20px;border:2px solid var(--accent);background:transparent;color:#fff}
+button{font:inherit;cursor:pointer;touch-action:manipulation;border-radius:8px;padding:10px 20px;border:2px solid var(--accent);background:transparent;color:#fff}
 button.primary{background:var(--accent);color:#16202e;font-weight:700}
 button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .hint{margin:0;color:var(--muted);font-size:.9rem}
-.ad-gate{position:fixed;inset:0;z-index:10;background:rgba(10,16,26,.9);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.ad-gate{position:fixed;inset:0;z-index:10;background:rgba(10,16,26,.9);display:flex;align-items:flex-start;touch-action:pan-y;justify-content:center;padding:16px;overflow:auto}
 .ad-gate[hidden]{display:none}
-.ad-card{width:100%;max-width:360px;display:flex;flex-direction:column;gap:16px;color:#fff}
+.ad-card{margin:auto;width:100%;max-width:360px;display:flex;flex-direction:column;gap:16px;color:#fff}
 .ad-label{font-size:.85rem;color:#c3cddc}
 .ad-slot{background:#fff;border-radius:8px;min-height:120px;overflow:hidden}
 button:disabled{opacity:.55;cursor:not-allowed}
 .mute{align-self:flex-start;color:var(--fg);border-color:var(--muted);padding:6px 12px;font-size:.9rem}
+
+.boost{display:none;position:absolute;right:12px;bottom:12px;z-index:2;width:70px;height:70px;padding:0;border-radius:50%;background:rgba(255,180,58,.8);color:#16202e;font-weight:700;font-size:.85rem;border:2px solid #fff;touch-action:none;-webkit-user-select:none;user-select:none}
+.boost.on{background:#fff;transform:scale(.93)}
+
+/* ===== মোবাইল/টাচ: পুরো স্ক্রিন জুড়ে গেইম ===== */
+@media (pointer:coarse){
+  :root{--bg:#0e131b;--fg:#e8edf4;--muted:#8d9bb0;--sw:100vw;--sh:100vh;--pt:4px;--pb:max(4px,env(safe-area-inset-bottom));--pl:env(safe-area-inset-left);--pr:env(safe-area-inset-right)}
+  @supports (height:100dvh){:root{--sh:100dvh}}
+  html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  body{display:block;padding:0}
+  .stage{position:absolute;top:0;left:0;width:var(--sw);height:var(--sh);max-width:none;gap:4px;align-items:center;justify-content:center;padding:var(--pt) var(--pr) var(--pb) var(--pl)}
+  h1,.hint{display:none}
+  .hud,.frame{width:min(100%,calc((var(--sh) - var(--pt) - var(--pb) - 40px) * 2))}
+  .hud{flex-wrap:nowrap;align-items:center;font-size:.78rem;gap:6px;white-space:nowrap}
+  .hud button{padding:2px 9px;font-size:.8rem;border-width:1px}
+  .boost{display:block}
+  .overlay{gap:6px;padding:8px}
+  .overlay h2{font-size:1.25rem}
+  .overlay p{font-size:.85rem}
+  .overlay button{padding:7px 16px}
+}
+/* খাড়া (portrait) ফোনে গেইম ৯০° ঘুরিয়ে পুরো স্ক্রিনে বসে, ফোন ঘোরাতে হয় না */
+@media (pointer:coarse) and (orientation:portrait){
+  :root{--sw:100vh;--sh:100vw;--pt:4px;--pb:4px;--pl:env(safe-area-inset-top);--pr:env(safe-area-inset-bottom)}
+  @supports (height:100dvh){:root{--sw:100dvh}}
+  .stage{left:100vw;transform-origin:0 0;transform:rotate(90deg)}
+}
 </style>
 </head>
 <body>
@@ -42,6 +71,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
     </div>
     <div class="frame">
       <canvas id="c" width="800" height="400" aria-label="হেলিকপ্টার গেইম"></canvas>
+      <button id="boost" class="boost" type="button" aria-label="স্পিড বুস্ট">বুস্ট</button>
       <div id="overlay" class="overlay" hidden>
         <h2 id="ov-title"></h2>
         <p id="ov-text"></p>
@@ -51,8 +81,8 @@ button:disabled{opacity:.55;cursor:not-allowed}
         </div>
       </div>
     </div>
-    <p class="hint">↑ ↓ (বা W / S) দিয়ে ওঠানামা, Space চেপে ধরলে স্পিড বুস্ট। মোবাইলে স্ক্রিনের ওপর/নিচের অর্ধেক ছুঁন।</p>
-    <button id="mute" class="mute" type="button"></button>
+    <p class="hint" id="hint">↑ ↓ (বা W / S) দিয়ে ওঠানামা, Space চেপে ধরলে স্পিড বুস্ট। মোবাইলে স্ক্রিনের ওপর/নিচের অর্ধেক ছুঁন।</p>
+    <button id="mute" class="mute" type="button" aria-label="সাউন্ড"></button>
   </main>
   <div id="ad-gate" class="ad-gate" role="dialog" aria-modal="true" aria-label="বিজ্ঞাপন" hidden>
     <div class="ad-card">
@@ -64,6 +94,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
   <script>
 // ---- config.js ----
 // গেইমের সব ধ্রুবক ও লেভেলের সেটিংস এখানে
+const TOUCH = matchMedia("(pointer: coarse)").matches;
 const W = 800, H = 400;   // ক্যানভাসের মাপ
 const SEG = 10;           // টানেলের প্রতিটি অংশের প্রস্থ
 const HX = 120;           // হেলিকপ্টারের স্থির X অবস্থান
@@ -109,25 +140,58 @@ const keys = { up: false, down: false, boost: false };
 
 const MAP = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", Space: "boost" };
 
-function initInput(canvas) {
+function initInput(canvas, boostBtn) {
+  const kb = { up: false, down: false, boost: false };
+  const touch = new Map(); // pointerId -> "up" | "down" | "boost"
+  const portrait = matchMedia("(pointer: coarse) and (orientation: portrait)");
+
+  const sync = () => {
+    const t = [...touch.values()];
+    keys.up = kb.up || t.includes("up");
+    keys.down = kb.down || t.includes("down");
+    keys.boost = kb.boost || t.includes("boost");
+    boostBtn.classList.toggle("on", keys.boost);
+  };
+
   addEventListener("keydown", (e) => {
     const k = MAP[e.code];
     if (!k) return;
     if (document.activeElement && document.activeElement.tagName === "BUTTON") return;
     e.preventDefault();
-    keys[k] = true;
+    kb[k] = true; sync();
   });
   addEventListener("keyup", (e) => {
     const k = MAP[e.code];
-    if (k) keys[k] = false;
+    if (k) { kb[k] = false; sync(); }
   });
-  canvas.addEventListener("pointerdown", (e) => {
+
+  // ওপর/নিচ অর্ধেক। খাড়া ফোনে গেইম ঘোরানো থাকে, তাই ক্যানভাসের "ওপর" = স্ক্রিনের ডান দিক
+  const half = (e) => {
     const r = canvas.getBoundingClientRect();
-    const top = e.clientY - r.top < r.height / 2;
-    keys.up = top;
-    keys.down = !top;
+    const f = portrait.matches ? (r.right - e.clientX) / r.width : (e.clientY - r.top) / r.height;
+    return f < 0.5 ? "up" : "down";
+  };
+  const end = (e) => { if (touch.delete(e.pointerId)) sync(); };
+
+  canvas.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    touch.set(e.pointerId, half(e)); sync();
   });
-  addEventListener("pointerup", () => { keys.up = false; keys.down = false; });
+  canvas.addEventListener("pointermove", (e) => {
+    if (touch.has(e.pointerId)) { touch.set(e.pointerId, half(e)); sync(); }
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach((n) => canvas.addEventListener(n, end));
+
+  boostBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    try { boostBtn.setPointerCapture(e.pointerId); } catch (err) {}
+    touch.set(e.pointerId, "boost"); sync();
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach((n) => boostBtn.addEventListener(n, end));
+
+  document.querySelector(".frame").addEventListener("contextmenu", (e) => e.preventDefault());
+  addEventListener("blur", () => { touch.clear(); kb.up = kb.down = kb.boost = false; sync(); });
 }
 
 // ---- helicopter.js ----
@@ -270,9 +334,10 @@ function hideOverlay() {
 }
 
 function updateHud(level, score, target, best) {
-  el.level.textContent = "লেভেল " + bn(level);
-  el.score.textContent = `স্কোর: ${bn(score)} / ${bn(target)}`;
-  el.best.textContent = "সেরা লেভেল: " + bn(best);
+  const set = (node, t) => { if (node.textContent !== t) node.textContent = t; };
+  set(el.level, "লেভেল " + bn(level));
+  set(el.score, `স্কোর: ${bn(score)} / ${bn(target)}`);
+  set(el.best, "সেরা লেভেল: " + bn(best));
 }
 
 // ---- ads.js ----
@@ -297,7 +362,7 @@ function withAd(action) {
   const frame = document.createElement("iframe");
   frame.title = "বিজ্ঞাপন";
   frame.srcdoc = adDoc();
-  frame.style.cssText = `width:100%;height:${ADS.height}px;border:0;display:block`;
+  frame.style.cssText = `width:100%;height:${ADS.height}px;border:0;display:block;max-height:calc(100vh - 150px)`;
   slot.appendChild(frame);
   gate.hidden = false;
 
@@ -405,7 +470,7 @@ function playCrash() {
 }
 
 function paintMute() {
-  muteBtn.textContent = muted ? "🔇 সাউন্ড বন্ধ" : "🔊 সাউন্ড চালু";
+  muteBtn.textContent = TOUCH ? (muted ? "🔇" : "🔊") : (muted ? "🔇 সাউন্ড বন্ধ" : "🔊 সাউন্ড চালু");
   muteBtn.setAttribute("aria-pressed", String(muted));
 }
 
@@ -440,7 +505,7 @@ class Game {
   showStart() {
     showOverlay({
       title: "হেলিকপ্টার",
-      text: `টানেল আর ব্লক এড়িয়ে ${bn(TARGET)} স্কোরে পৌঁছালে পরের লেভেল!`,
+      text: `টানেল আর ব্লক এড়িয়ে ${bn(TARGET)} স্কোরে পৌঁছালে পরের লেভেল!` + (TOUCH ? "\nস্ক্রিনের ওপর/নিচের অর্ধেক ছুঁয়ে ধরুন। ডানের বুস্ট বাটনে স্পিড বাড়ে।" : ""),
       primary: { label: "শুরু করুন", action: () => this.startLevel(1) },
     });
   }
@@ -504,17 +569,65 @@ class Game {
   }
 
   run() {
-    const loop = () => { this.update(); this.draw(); requestAnimationFrame(loop); };
-    loop();
+    // ৬০ বার/সেকেন্ডে আপডেট, ডিসপ্লে ৯০/১২০Hz হলেও গতি একই থাকে
+    const STEP = 1000 / 60;
+    let last = performance.now(), acc = 0;
+    const loop = (now) => {
+      acc += Math.min(100, now - last);
+      last = now;
+      while (acc >= STEP - 2) { this.update(); acc -= STEP; }
+      this.draw();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
   }
 }
 
 // ---- main.js ----
 const canvas = document.getElementById("c");
-initInput(canvas);
+initInput(canvas, document.getElementById("boost"));
 initAudio();
 
-const game = new Game(canvas.getContext("2d"));
+// ঝকঝকে ছবির জন্য ডিসপ্লে ঘনত্ব অনুযায়ী ক্যানভাস; আঁকার কোড আগের মাপেই চলে
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+canvas.width = W * dpr;
+canvas.height = H * dpr;
+const ctx = canvas.getContext("2d");
+ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+if (TOUCH) {
+  const hud = document.querySelector(".hud");
+  hud.appendChild(document.getElementById("mute"));
+  if (document.fullscreenEnabled) {           // Android Chrome: ফুলস্ক্রিন + আড়াআড়ি লক
+    const fs = document.createElement("button");
+    fs.type = "button"; fs.className = "mute"; fs.textContent = "⛶"; fs.setAttribute("aria-label", "ফুলস্ক্রিন");
+    fs.addEventListener("click", async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else {
+          await document.documentElement.requestFullscreen();
+          try { await screen.orientation.lock("landscape"); } catch (e) {}
+        }
+      } catch (e) {}
+      fs.blur();
+    });
+    hud.appendChild(fs);
+  }
+  // খেলার সময় স্ক্রিন যেন বন্ধ না হয়
+  let wl = null;
+  const keepAwake = async () => {
+    try {
+      if (navigator.wakeLock && !wl) {
+        wl = await navigator.wakeLock.request("screen");
+        wl.addEventListener("release", () => { wl = null; });
+      }
+    } catch (e) {}
+  };
+  addEventListener("pointerdown", keepAwake);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) keepAwake(); });
+}
+
+const game = new Game(ctx);
 game.showStart();
 game.run();
 </script>
