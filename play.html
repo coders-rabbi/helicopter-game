@@ -37,25 +37,26 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .boost.on{background:#fff;transform:scale(.93)}
 
 /* ===== মোবাইল/টাচ: পুরো স্ক্রিন জুড়ে গেইম ===== */
-@media (pointer:coarse){
-  :root{--bg:#0e131b;--fg:#e8edf4;--muted:#8d9bb0;--sw:100vw;--sh:100vh;--pt:4px;--pb:max(4px,env(safe-area-inset-bottom));--pl:env(safe-area-inset-left);--pr:env(safe-area-inset-right)}
+@media all{
+  :root{--bg:#0e131b;--fg:#e8edf4;--muted:#8d9bb0;--sw:100vw;--sh:100vh;--pt:4px;--pb:max(4px,env(safe-area-inset-bottom));--pl:max(10px,env(safe-area-inset-left));--pr:max(10px,env(safe-area-inset-right))}
   @supports (height:100dvh){:root{--sh:100dvh}}
   html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   body{display:block;padding:0}
   .stage{position:absolute;top:0;left:0;width:var(--sw);height:var(--sh);max-width:none;gap:4px;align-items:center;justify-content:center;padding:var(--pt) var(--pr) var(--pb) var(--pl)}
   h1,.hint{display:none}
   .hud,.frame{width:min(100%,calc((var(--sh) - var(--pt) - var(--pb) - 40px) * 2))}
-  .hud{flex-wrap:nowrap;align-items:center;font-size:.78rem;gap:6px;white-space:nowrap}
-  .hud button{padding:2px 9px;font-size:.8rem;border-width:1px}
-  .boost{display:block}
+  .hud{flex-wrap:nowrap;align-items:center;font-size:clamp(.78rem,2.2vmin,1.25rem);gap:6px;white-space:nowrap}
+  .hud button{padding:2px 10px;font-size:clamp(.8rem,2.2vmin,1.25rem);border-width:1px}
+  .boost{display:block;width:clamp(70px,12vmin,120px);height:clamp(70px,12vmin,120px);font-size:clamp(.85rem,2vmin,1.2rem)}
   .overlay{gap:6px;padding:8px}
-  .overlay h2{font-size:1.25rem}
-  .overlay p{font-size:.85rem}
-  .overlay button{padding:7px 16px}
+  .overlay{gap:clamp(6px,1.6vmin,16px)}
+  .overlay h2{font-size:clamp(1.25rem,4.5vmin,2.6rem)}
+  .overlay p{font-size:clamp(.85rem,2.4vmin,1.4rem);max-width:48ch}
+  .overlay button{padding:clamp(7px,1.4vmin,14px) clamp(16px,3vmin,32px);font-size:clamp(1rem,2.4vmin,1.4rem)}
 }
 /* খাড়া (portrait) ফোনে গেইম ৯০° ঘুরিয়ে পুরো স্ক্রিনে বসে, ফোন ঘোরাতে হয় না */
 @media (pointer:coarse) and (orientation:portrait){
-  :root{--sw:100vh;--sh:100vw;--pt:4px;--pb:4px;--pl:env(safe-area-inset-top);--pr:env(safe-area-inset-bottom)}
+  :root{--sw:100vh;--sh:100vw;--pt:4px;--pb:4px;--pl:max(10px,env(safe-area-inset-top));--pr:max(10px,env(safe-area-inset-bottom))}
   @supports (height:100dvh){:root{--sw:100dvh}}
   .stage{left:100vw;transform-origin:0 0;transform:rotate(90deg)}
 }
@@ -470,7 +471,7 @@ function playCrash() {
 }
 
 function paintMute() {
-  muteBtn.textContent = TOUCH ? (muted ? "🔇" : "🔊") : (muted ? "🔇 সাউন্ড বন্ধ" : "🔊 সাউন্ড চালু");
+  muteBtn.textContent = muted ? "🔇" : "🔊";
   muteBtn.setAttribute("aria-pressed", String(muted));
 }
 
@@ -505,7 +506,7 @@ class Game {
   showStart() {
     showOverlay({
       title: "হেলিকপ্টার",
-      text: `টানেল আর ব্লক এড়িয়ে ${bn(TARGET)} স্কোরে পৌঁছালে পরের লেভেল!` + (TOUCH ? "\nস্ক্রিনের ওপর/নিচের অর্ধেক ছুঁয়ে ধরুন। ডানের বুস্ট বাটনে স্পিড বাড়ে।" : ""),
+      text: `টানেল আর ব্লক এড়িয়ে ${bn(TARGET)} স্কোরে পৌঁছালে পরের লেভেল!` + (TOUCH ? "\nস্ক্রিনের ওপর/নিচের অর্ধেক ছুঁয়ে ধরুন। ডানের বুস্ট বাটনে স্পিড বাড়ে।" : "\n↑ ↓ (বা W / S) দিয়ে ওঠানামা, Space চেপে ধরলে বুস্ট।"),
       primary: { label: "শুরু করুন", action: () => this.startLevel(1) },
     });
   }
@@ -588,14 +589,19 @@ const canvas = document.getElementById("c");
 initInput(canvas, document.getElementById("boost"));
 initAudio();
 
-// ঝকঝকে ছবির জন্য ডিসপ্লে ঘনত্ব অনুযায়ী ক্যানভাস; আঁকার কোড আগের মাপেই চলে
-const dpr = Math.min(window.devicePixelRatio || 1, 2);
-canvas.width = W * dpr;
-canvas.height = H * dpr;
+// স্ক্রিনের আসল মাপ অনুযায়ী ক্যানভাসের রেজোলিউশন (ডেস্কটপে বড় করলেও ঝকঝকে থাকে)
 const ctx = canvas.getContext("2d");
-ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+function fit() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.min(2400, Math.round(canvas.clientWidth * dpr)) || W;
+  if (canvas.width !== w) { canvas.width = w; canvas.height = Math.round(w / 2); }
+  const k = canvas.width / W;
+  ctx.setTransform(k, 0, 0, k, 0, 0);
+}
+new ResizeObserver(fit).observe(canvas);
+fit();
 
-if (TOUCH) {
+{
   const hud = document.querySelector(".hud");
   hud.appendChild(document.getElementById("mute"));
   if (document.fullscreenEnabled) {           // Android Chrome: ফুলস্ক্রিন + আড়াআড়ি লক
