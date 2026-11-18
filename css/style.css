@@ -1,0 +1,25 @@
+:root{--bg:#eef1f5;--fg:#16202e;--muted:#5a6678;--accent:#ffb43a}
+@media (prefers-color-scheme:dark){:root{--bg:#0e131b;--fg:#e8edf4;--muted:#8d9bb0}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:16px}
+.stage{width:100%;max-width:800px;display:flex;flex-direction:column;gap:10px}
+h1{margin:0;font-size:1.4rem}
+.hud{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.frame{position:relative}
+canvas{width:100%;height:auto;aspect-ratio:2/1;display:block;border-radius:10px;touch-action:none}
+.overlay{position:absolute;inset:0;border-radius:10px;background:rgba(10,16,26,.78);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px}
+.overlay[hidden]{display:none}
+.overlay h2{margin:0;font-size:1.8rem}
+.overlay p{margin:0;max-width:36ch}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+button{font:inherit;cursor:pointer;border-radius:8px;padding:10px 20px;border:2px solid var(--accent);background:transparent;color:#fff}
+button.primary{background:var(--accent);color:#16202e;font-weight:700}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.hint{margin:0;color:var(--muted);font-size:.9rem}
+.ad-gate{position:fixed;inset:0;z-index:10;background:rgba(10,16,26,.9);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.ad-gate[hidden]{display:none}
+.ad-card{width:100%;max-width:360px;display:flex;flex-direction:column;gap:16px;color:#fff}
+.ad-label{font-size:.85rem;color:#c3cddc}
+.ad-slot{background:#fff;border-radius:8px;min-height:120px;overflow:hidden}
+button:disabled{opacity:.55;cursor:not-allowed}
+.mute{align-self:flex-start;color:var(--fg);border-color:var(--muted);padding:6px 12px;font-size:.9rem}

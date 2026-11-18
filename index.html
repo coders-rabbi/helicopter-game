@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>হেলিকপ্টার গেইম</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="stage">
+    <h1>হেলিকপ্টার</h1>
+    <div class="hud">
+      <span id="hud-level">লেভেল ১</span>
+      <span id="hud-score">স্কোর: ০ / ৯৯৯</span>
+      <span id="hud-best">সেরা লেভেল: ১</span>
+    </div>
+    <div class="frame">
+      <canvas id="c" width="800" height="400" aria-label="হেলিকপ্টার গেইম"></canvas>
+      <div id="overlay" class="overlay" hidden>
+        <h2 id="ov-title"></h2>
+        <p id="ov-text"></p>
+        <div class="actions">
+          <button id="ov-primary" class="primary"></button>
+          <button id="ov-secondary" hidden></button>
+        </div>
+      </div>
+    </div>
+    <p class="hint">↑ ↓ (বা W / S) দিয়ে ওঠানামা, Space চেপে ধরলে স্পিড বুস্ট। মোবাইলে স্ক্রিনের ওপর/নিচের অর্ধেক ছুঁন।</p>
+    <button id="mute" class="mute" type="button"></button>
+  </main>
+  <div id="ad-gate" class="ad-gate" role="dialog" aria-modal="true" aria-label="বিজ্ঞাপন" hidden>
+    <div class="ad-card">
+      <span class="ad-label">বিজ্ঞাপন</span>
+      <div id="ad-slot" class="ad-slot"></div>
+      <button id="ad-continue" class="primary" disabled>চালিয়ে যান</button>
+    </div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
