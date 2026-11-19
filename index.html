@@ -2,9 +2,65 @@
 <html lang="bn">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0e131b">
   <title>হেলিকপ্টার গেইম</title>
-  <link rel="stylesheet" href="css/style.css">
+  <style>
+:root{--bg:#eef1f5;--fg:#16202e;--muted:#5a6678;--accent:#ffb43a}
+@media (prefers-color-scheme:dark){:root{--bg:#0e131b;--fg:#e8edf4;--muted:#8d9bb0}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:16px}
+.stage{width:100%;max-width:800px;display:flex;flex-direction:column;gap:10px}
+h1{margin:0;font-size:1.4rem}
+.hud{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.frame{position:relative}
+canvas{width:100%;height:auto;aspect-ratio:2/1;display:block;border-radius:10px;touch-action:none}
+.overlay{z-index:3;position:absolute;inset:0;border-radius:10px;background:rgba(10,16,26,.78);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px}
+.overlay[hidden]{display:none}
+.overlay h2{margin:0;font-size:1.8rem}
+.overlay p{margin:0;max-width:36ch;white-space:pre-line}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+button{font:inherit;cursor:pointer;touch-action:manipulation;border-radius:8px;padding:10px 20px;border:2px solid var(--accent);background:transparent;color:#fff}
+button.primary{background:var(--accent);color:#16202e;font-weight:700}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.hint{margin:0;color:var(--muted);font-size:.9rem}
+.ad-gate{position:fixed;inset:0;z-index:10;background:rgba(10,16,26,.9);display:flex;align-items:flex-start;touch-action:pan-y;justify-content:center;padding:16px;overflow:auto}
+.ad-gate[hidden]{display:none}
+.ad-card{margin:auto;width:100%;max-width:360px;display:flex;flex-direction:column;gap:16px;color:#fff}
+.ad-label{font-size:.85rem;color:#c3cddc}
+.ad-slot{background:#fff;border-radius:8px;min-height:120px;overflow:hidden}
+button:disabled{opacity:.55;cursor:not-allowed}
+.mute{align-self:flex-start;color:var(--fg);border-color:var(--muted);padding:6px 12px;font-size:.9rem}
+
+.boost{display:none;position:absolute;right:12px;bottom:12px;z-index:2;width:70px;height:70px;padding:0;border-radius:50%;background:rgba(255,180,58,.8);color:#16202e;font-weight:700;font-size:.85rem;border:2px solid #fff;touch-action:none;-webkit-user-select:none;user-select:none}
+.boost.on{background:#fff;transform:scale(.93)}
+
+/* ===== মোবাইল/টাচ: পুরো স্ক্রিন জুড়ে গেইম ===== */
+@media all{
+  :root{--bg:#0e131b;--fg:#e8edf4;--muted:#8d9bb0;--sw:100vw;--sh:100vh;--pt:4px;--pb:max(4px,env(safe-area-inset-bottom));--pl:max(10px,env(safe-area-inset-left));--pr:max(10px,env(safe-area-inset-right))}
+  @supports (height:100dvh){:root{--sh:100dvh}}
+  html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  body{display:block;padding:0}
+  .stage{position:absolute;top:0;left:0;width:var(--sw);height:var(--sh);max-width:none;gap:4px;align-items:center;justify-content:center;padding:var(--pt) var(--pr) var(--pb) var(--pl)}
+  h1,.hint{display:none}
+  .hud,.frame{width:min(100%,calc((var(--sh) - var(--pt) - var(--pb) - 40px) * 2))}
+  .hud{flex-wrap:nowrap;align-items:center;font-size:clamp(.78rem,2.2vmin,1.25rem);gap:6px;white-space:nowrap}
+  .hud button{padding:2px 10px;font-size:clamp(.8rem,2.2vmin,1.25rem);border-width:1px}
+  .boost{display:block;width:clamp(70px,12vmin,120px);height:clamp(70px,12vmin,120px);font-size:clamp(.85rem,2vmin,1.2rem)}
+  .overlay{gap:6px;padding:8px}
+  .overlay{gap:clamp(6px,1.6vmin,16px)}
+  .overlay h2{font-size:clamp(1.25rem,4.5vmin,2.6rem)}
+  .overlay p{font-size:clamp(.85rem,2.4vmin,1.4rem);max-width:48ch}
+  .overlay button{padding:clamp(7px,1.4vmin,14px) clamp(16px,3vmin,32px);font-size:clamp(1rem,2.4vmin,1.4rem)}
+}
+/* খাড়া (portrait) ফোনে গেইম ৯০° ঘুরিয়ে পুরো স্ক্রিনে বসে, ফোন ঘোরাতে হয় না */
+@media (pointer:coarse) and (orientation:portrait){
+  :root{--sw:100vh;--sh:100vw;--pt:4px;--pb:4px;--pl:max(10px,env(safe-area-inset-top));--pr:max(10px,env(safe-area-inset-bottom))}
+  @supports (height:100dvh){:root{--sw:100dvh}}
+  .stage{left:100vw;transform-origin:0 0;transform:rotate(90deg)}
+}
+</style>
 </head>
 <body>
   <main class="stage">
@@ -16,6 +72,7 @@
     </div>
     <div class="frame">
       <canvas id="c" width="800" height="400" aria-label="হেলিকপ্টার গেইম"></canvas>
+      <button id="boost" class="boost" type="button" aria-label="স্পিড বুস্ট">বুস্ট</button>
       <div id="overlay" class="overlay" hidden>
         <h2 id="ov-title"></h2>
         <p id="ov-text"></p>
@@ -25,8 +82,8 @@
         </div>
       </div>
     </div>
-    <p class="hint">↑ ↓ (বা W / S) দিয়ে ওঠানামা, Space চেপে ধরলে স্পিড বুস্ট। মোবাইলে স্ক্রিনের ওপর/নিচের অর্ধেক ছুঁন।</p>
-    <button id="mute" class="mute" type="button"></button>
+    <p class="hint" id="hint">↑ ↓ (বা W / S) দিয়ে ওঠানামা, Space চেপে ধরলে স্পিড বুস্ট। মোবাইলে স্ক্রিনের ওপর/নিচের অর্ধেক ছুঁন।</p>
+    <button id="mute" class="mute" type="button" aria-label="সাউন্ড"></button>
   </main>
   <div id="ad-gate" class="ad-gate" role="dialog" aria-modal="true" aria-label="বিজ্ঞাপন" hidden>
     <div class="ad-card">
@@ -35,6 +92,552 @@
       <button id="ad-continue" class="primary" disabled>চালিয়ে যান</button>
     </div>
   </div>
-  <script type="module" src="js/main.js"></script>
+  <script>
+// ---- config.js ----
+// গেইমের সব ধ্রুবক ও লেভেলের সেটিংস এখানে
+const TOUCH = matchMedia("(pointer: coarse)").matches;
+const W = 800, H = 400;   // ক্যানভাসের মাপ
+const SEG = 10;           // টানেলের প্রতিটি অংশের প্রস্থ
+const HX = 120;           // হেলিকপ্টারের স্থির X অবস্থান
+const TARGET = 999;       // এই স্কোরে লেভেল শেষ
+
+const COLORS = {
+  sky: "#1b2a41", wall: "#3b5878", block: "#d9503f",
+  heli: "#ffb43a", glass: "#1b2a41", rotor: "#e8edf4",
+};
+
+// লেভেল যত বাড়ে, গতি বাড়ে, টানেল সরু হয়, বাধা ঘন হয়
+function levelConfig(n) {
+  return {
+    speed: 4 + (n - 1) * 0.6,
+    minGap: Math.max(120, 170 - (n - 1) * 12),
+    blockSpacing: Math.max(260, 440 - (n - 1) * 30),
+  };
+}
+
+// বিজ্ঞাপনের সেটিংস (Adsterra নেটিভ ব্যানার)
+const ADS = {
+  enabled: true,     // false করলে বিজ্ঞাপন বন্ধ
+  every: 1,          // প্রতি কয়বার বাটন ক্লিকে একবার বিজ্ঞাপন (১ = প্রতিবার, ৩ = প্রতি তিনবারে একবার)
+  countdown: 5,      // কত সেকেন্ড পরে "চালিয়ে যান" বাটন সক্রিয় হবে
+  height: 320,       // বিজ্ঞাপনের ফ্রেমের উচ্চতা (px)
+  src: "https://bicea.org/21/a9f8edcccd05e377d261fee79a2b7ea8",
+  containerId: "container-a9f8edcccd05e377d261fee79a2b7ea8",
+};
+
+// ---- storage.js ----
+// সেরা লেভেল ব্রাউজারে সেভ করা
+const KEY = "heliBestLevel";
+function loadBest() {
+  try { return +localStorage.getItem(KEY) || 1; } catch (e) { return 1; }
+}
+function saveBest(n) {
+  try { localStorage.setItem(KEY, n); } catch (e) {}
+}
+
+// ---- input.js ----
+// কিবোর্ড ও টাচ ইনপুট; বাকি কোড শুধু `keys` পড়ে
+const keys = { up: false, down: false, boost: false };
+
+const MAP = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", Space: "boost" };
+
+function initInput(canvas, boostBtn) {
+  const kb = { up: false, down: false, boost: false };
+  const touch = new Map(); // pointerId -> "up" | "down" | "boost"
+  const portrait = matchMedia("(pointer: coarse) and (orientation: portrait)");
+
+  const sync = () => {
+    const t = [...touch.values()];
+    keys.up = kb.up || t.includes("up");
+    keys.down = kb.down || t.includes("down");
+    keys.boost = kb.boost || t.includes("boost");
+    boostBtn.classList.toggle("on", keys.boost);
+  };
+
+  addEventListener("keydown", (e) => {
+    const k = MAP[e.code];
+    if (!k) return;
+    if (document.activeElement && document.activeElement.tagName === "BUTTON") return;
+    e.preventDefault();
+    kb[k] = true; sync();
+  });
+  addEventListener("keyup", (e) => {
+    const k = MAP[e.code];
+    if (k) { kb[k] = false; sync(); }
+  });
+
+  // ওপর/নিচ অর্ধেক। খাড়া ফোনে গেইম ঘোরানো থাকে, তাই ক্যানভাসের "ওপর" = স্ক্রিনের ডান দিক
+  const half = (e) => {
+    const r = canvas.getBoundingClientRect();
+    const f = portrait.matches ? (r.right - e.clientX) / r.width : (e.clientY - r.top) / r.height;
+    return f < 0.5 ? "up" : "down";
+  };
+  const end = (e) => { if (touch.delete(e.pointerId)) sync(); };
+
+  canvas.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    touch.set(e.pointerId, half(e)); sync();
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (touch.has(e.pointerId)) { touch.set(e.pointerId, half(e)); sync(); }
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach((n) => canvas.addEventListener(n, end));
+
+  boostBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    try { boostBtn.setPointerCapture(e.pointerId); } catch (err) {}
+    touch.set(e.pointerId, "boost"); sync();
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach((n) => boostBtn.addEventListener(n, end));
+
+  document.querySelector(".frame").addEventListener("contextmenu", (e) => e.preventDefault());
+  addEventListener("blur", () => { touch.clear(); kb.up = kb.down = kb.boost = false; sync(); });
+}
+
+// ---- helicopter.js ----
+class Helicopter {
+  constructor() { this.reset(); }
+
+  reset() { this.y = H / 2 - 10; this.vy = 0; this.w = 44; this.h = 20; }
+
+  update(keys, frame) {
+    const target = (keys.up ? -4.5 : 0) + (keys.down ? 4.5 : 0);
+    this.vy += (target - this.vy) * 0.25;
+    this.y += this.vy + Math.sin(frame * 0.08) * 0.35; // হালকা দুলুনি
+  }
+
+  get rect() { return { x: HX, y: this.y, w: this.w, h: this.h }; }
+
+  draw(ctx, frame) {
+    ctx.save();
+    ctx.translate(HX + this.w / 2, this.y + this.h / 2);
+    ctx.rotate(this.vy * 0.04);
+    ctx.fillStyle = COLORS.heli;
+    ctx.beginPath(); ctx.ellipse(0, 0, this.w / 2 - 4, this.h / 2, 0, 0, 7); ctx.fill();
+    ctx.fillRect(-this.w / 2 - 6, -3, 18, 5);
+    ctx.fillStyle = COLORS.glass;
+    ctx.beginPath(); ctx.ellipse(6, -2, 7, 5, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = COLORS.rotor; ctx.lineWidth = 3;
+    const r = Math.abs(Math.sin(frame * 0.9)) * 24 + 4;
+    const y = -this.h / 2 - 3;
+    ctx.beginPath(); ctx.moveTo(-r, y); ctx.lineTo(r, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -this.h / 2); ctx.lineTo(0, y); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// ---- tunnel.js ----
+// গুহার ওপর-নিচের দেয়াল; প্রতিটি অংশ = { c: মাঝের রেখা, g: ফাঁকের মাপ }
+class Tunnel {
+  constructor() { this.reset(); }
+
+  reset() {
+    this.segs = [];
+    this.scroll = 0;
+    for (let i = 0; i < W / SEG + 3; i++) this.segs.push({ c: H / 2, g: 300 });
+  }
+
+  last() { return this.segs[this.segs.length - 1]; }
+
+  advance(dx, targetGap) {
+    this.scroll += dx;
+    while (this.scroll >= SEG) {
+      this.scroll -= SEG;
+      this.segs.shift();
+      this.add(targetGap);
+    }
+  }
+
+  add(targetGap) {
+    const l = this.last();
+    const g = l.g + Math.max(-1, Math.min(1, targetGap - l.g));
+    const c = Math.max(g / 2 + 8, Math.min(H - g / 2 - 8, l.c + (Math.random() - 0.5) * 14));
+    this.segs.push({ c, g });
+  }
+
+  hits(x, w, y, h) {
+    const a = Math.floor((x + this.scroll) / SEG);
+    const b = Math.floor((x + w + this.scroll) / SEG);
+    for (let i = a; i <= b && i < this.segs.length; i++) {
+      const s = this.segs[i];
+      if (y < s.c - s.g / 2 || y + h > s.c + s.g / 2) return true;
+    }
+    return false;
+  }
+
+  draw(ctx, color) {
+    ctx.fillStyle = color;
+    this.segs.forEach((s, i) => {
+      const x = i * SEG - this.scroll, top = s.c - s.g / 2, bot = s.c + s.g / 2;
+      ctx.fillRect(x, 0, SEG + 1, top);
+      ctx.fillRect(x, bot, SEG + 1, H - bot);
+    });
+  }
+}
+
+// ---- obstacles.js ----
+// টানেলের ভেতরের লাল ব্লক; দূরত্ব ধরে আসে, তাই বুস্টেও সমান ফাঁক থাকে
+class Blocks {
+  constructor() { this.reset(); }
+
+  reset() { this.list = []; this.travelled = 0; }
+
+  update(speed, tunnel, spacing) {
+    this.travelled += speed;
+    if (this.travelled >= spacing) {
+      this.travelled = 0;
+      const s = tunnel.last(), h = 50;
+      this.list.push({ x: W + 20, y: s.c - h / 2 + (Math.random() - 0.5) * (s.g - h - 70), w: 26, h });
+    }
+    this.list.forEach((b) => (b.x -= speed));
+    this.list = this.list.filter((b) => b.x + b.w > 0);
+  }
+
+  hits(r) {
+    return this.list.some((b) => r.x < b.x + b.w && r.x + r.w > b.x && r.y < b.y + b.h && r.y + r.h > b.y);
+  }
+
+  draw(ctx, color) {
+    ctx.fillStyle = color;
+    this.list.forEach((b) => ctx.fillRect(b.x, b.y, b.w, b.h));
+  }
+}
+
+// ---- ui.js ----
+// HTML ওভারলে (বাটন) ও HUD; গেইমের লজিক এখানে নেই
+const $ = (id) => document.getElementById(id);
+const el = {
+  overlay: $("overlay"), title: $("ov-title"), text: $("ov-text"),
+  primary: $("ov-primary"), secondary: $("ov-secondary"),
+  level: $("hud-level"), score: $("hud-score"), best: $("hud-best"),
+};
+let onPrimary = null, onSecondary = null;
+el.primary.addEventListener("click", () => onPrimary && onPrimary());
+el.secondary.addEventListener("click", () => onSecondary && onSecondary());
+
+const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
+
+function showOverlay({ title, text, primary, secondary }) {
+  el.title.textContent = title;
+  el.text.textContent = text;
+  el.primary.textContent = primary.label;
+  onPrimary = primary.action;
+  el.secondary.hidden = !secondary;
+  if (secondary) { el.secondary.textContent = secondary.label; onSecondary = secondary.action; }
+  el.overlay.hidden = false;
+  el.primary.focus();
+}
+
+function hideOverlay() {
+  el.overlay.hidden = true;
+  if (document.activeElement) document.activeElement.blur();
+}
+
+function updateHud(level, score, target, best) {
+  const set = (node, t) => { if (node.textContent !== t) node.textContent = t; };
+  set(el.level, "লেভেল " + bn(level));
+  set(el.score, `স্কোর: ${bn(score)} / ${bn(target)}`);
+  set(el.best, "সেরা লেভেল: " + bn(best));
+}
+
+// ---- ads.js ----
+// বাটনের কাজের আগে বিজ্ঞাপন দেখায়; শেষে action() চালায়
+const gate = document.getElementById("ad-gate");
+const slot = document.getElementById("ad-slot");
+const btn = document.getElementById("ad-continue");
+let clicks = 0, timer = null;
+
+// স্ক্রিপ্টটা আলাদা iframe-এ চালাই, যাতে প্রতিবার নতুন করে লোড হয়
+function adDoc() {
+  return `<!doctype html><html><body style="margin:0">
+<script async="async" data-cfasync="false" src="${ADS.src}"><\/script>
+<div id="${ADS.containerId}"></div></body></html>`;
+}
+
+function withAd(action) {
+  clicks++;
+  if (!ADS.enabled || clicks % ADS.every !== 0) return action();
+
+  slot.innerHTML = "";
+  const frame = document.createElement("iframe");
+  frame.title = "বিজ্ঞাপন";
+  frame.srcdoc = adDoc();
+  frame.style.cssText = `width:100%;height:${ADS.height}px;border:0;display:block;max-height:calc(100vh - 150px)`;
+  slot.appendChild(frame);
+  gate.hidden = false;
+
+  let left = ADS.countdown;
+  btn.disabled = true;
+  btn.textContent = `${bn(left)} সেকেন্ড পরে চালিয়ে যান`;
+  clearInterval(timer);
+  timer = setInterval(() => {
+    left--;
+    if (left > 0) { btn.textContent = `${bn(left)} সেকেন্ড পরে চালিয়ে যান`; return; }
+    clearInterval(timer);
+    btn.disabled = false;
+    btn.textContent = "চালিয়ে যান";
+  }, 1000);
+
+  btn.onclick = () => {
+    gate.hidden = true;
+    slot.innerHTML = "";
+    btn.blur();
+    action();
+  };
+}
+
+// ---- audio.js ----
+// সাউন্ড: কোনো অডিও ফাইল ছাড়াই Web Audio API দিয়ে বানানো
+// (হেলিকপ্টারের ইঞ্জিন লুপ + ক্র্যাশের আওয়াজ)
+let AC = null, nodes = null, muted = false;
+try { muted = localStorage.getItem("heliMuted") === "1"; } catch (e) {}
+const muteBtn = document.getElementById("mute");
+
+function noiseBuffer(sec) {
+  const b = AC.createBuffer(1, AC.sampleRate * sec, AC.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return b;
+}
+
+function build() {
+  const master = AC.createGain();
+  master.gain.value = muted ? 0 : 1;
+  master.connect(AC.destination);
+
+  // ইঞ্জিন: নিচু স্বর + পাখার ঘূর্ণনের "থপ থপ" (LFO) + বাতাসের শব্দ
+  const engine = AC.createGain(); engine.gain.value = 0; engine.connect(master);
+  const body = AC.createOscillator(); body.type = "sawtooth"; body.frequency.value = 58;
+  const lp = AC.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 400;
+  const chop = AC.createGain(); chop.gain.value = 0.5;
+  const lfo = AC.createOscillator(); lfo.type = "sine"; lfo.frequency.value = 13;
+  const depth = AC.createGain(); depth.gain.value = 0.5;
+  lfo.connect(depth); depth.connect(chop.gain);
+  body.connect(chop); chop.connect(lp); lp.connect(engine);
+
+  const air = AC.createBufferSource(); air.buffer = noiseBuffer(2); air.loop = true;
+  const bp = AC.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 700; bp.Q.value = 0.6;
+  const airGain = AC.createGain(); airGain.gain.value = 0.25;
+  air.connect(bp); bp.connect(airGain); airGain.connect(engine);
+
+  body.start(); lfo.start(); air.start();
+  return { master, engine, body, lfo };
+}
+
+// ব্রাউজার ইউজারের ক্লিকের আগে সাউন্ড চালাতে দেয় না, তাই ক্লিকের ভেতর থেকে ডাকতে হয়
+function resumeAudio() {
+  if (!AC) {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    AC = new C();
+    nodes = build();
+  }
+  if (AC.state === "suspended") AC.resume();
+}
+
+function startEngine() {
+  if (nodes) nodes.engine.gain.setTargetAtTime(0.2, AC.currentTime, 0.1);
+}
+
+function stopEngine() {
+  if (nodes) nodes.engine.gain.setTargetAtTime(0, AC.currentTime, 0.08);
+}
+
+// বুস্টে পাখা দ্রুত ঘোরে, ওঠা-নামায় স্বর সামান্য বদলায়
+function setEngine(boost, vy) {
+  if (!nodes) return;
+  const t = AC.currentTime;
+  nodes.lfo.frequency.setTargetAtTime(boost ? 22 : 13, t, 0.15);
+  nodes.body.frequency.setTargetAtTime(58 + (boost ? 22 : 0) - vy * 3, t, 0.15);
+}
+
+function playCrash() {
+  if (!nodes) return;
+  const t = AC.currentTime;
+  const n = AC.createBufferSource(); n.buffer = noiseBuffer(1);
+  const f = AC.createBiquadFilter(); f.type = "lowpass";
+  f.frequency.setValueAtTime(3000, t); f.frequency.exponentialRampToValueAtTime(120, t + 0.8);
+  const g = AC.createGain();
+  g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+  n.connect(f); f.connect(g); g.connect(nodes.master);
+  n.start(t); n.stop(t + 1);
+
+  const o = AC.createOscillator(); o.type = "sine";
+  o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(35, t + 0.5);
+  const og = AC.createGain();
+  og.gain.setValueAtTime(0.9, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+  o.connect(og); og.connect(nodes.master);
+  o.start(t); o.stop(t + 0.7);
+}
+
+function paintMute() {
+  muteBtn.textContent = muted ? "🔇" : "🔊";
+  muteBtn.setAttribute("aria-pressed", String(muted));
+}
+
+function initAudio() {
+  paintMute();
+  muteBtn.addEventListener("click", () => {
+    muted = !muted;
+    try { localStorage.setItem("heliMuted", muted ? "1" : "0"); } catch (e) {}
+    if (nodes) nodes.master.gain.setTargetAtTime(muted ? 0 : 1, AC.currentTime, 0.03);
+    paintMute();
+    muteBtn.blur();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!AC) return;
+    if (document.hidden) AC.suspend(); else AC.resume();
+  });
+}
+
+// ---- game.js ----
+// অবস্থা: "ready" → "play" → "over" (ক্র্যাশ) বা "levelup" (৯৯৯ স্কোর)
+class Game {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.heli = new Helicopter();
+    this.tunnel = new Tunnel();
+    this.blocks = new Blocks();
+    this.best = loadBest();
+    this.level = 1; this.score = 0; this.frame = 0; this.travel = 0;
+    this.state = "ready";
+  }
+
+  showStart() {
+    showOverlay({
+      title: "হেলিকপ্টার",
+      text: `টানেল আর ব্লক এড়িয়ে ${bn(TARGET)} স্কোরে পৌঁছালে পরের লেভেল!` + (TOUCH ? "\nস্ক্রিনের ওপর/নিচের অর্ধেক ছুঁয়ে ধরুন। ডানের বুস্ট বাটনে স্পিড বাড়ে।" : "\n↑ ↓ (বা W / S) দিয়ে ওঠানামা, Space চেপে ধরলে বুস্ট।"),
+      primary: { label: "শুরু করুন", action: () => this.startLevel(1) },
+    });
+  }
+
+  startLevel(n) {
+    this.level = n; this.score = 0; this.frame = 0; this.travel = 0;
+    this.heli.reset(); this.tunnel.reset(); this.blocks.reset();
+    if (n > this.best) { this.best = n; saveBest(n); }
+    this.state = "play";
+    hideOverlay();
+    resumeAudio();
+    startEngine();
+  }
+
+  crash() {
+    this.state = "over";
+    stopEngine();
+    playCrash();
+    showOverlay({
+      title: "গেইম ওভার",
+      text: `লেভেল ${bn(this.level)}, স্কোর ${bn(this.score)}`,
+      primary: { label: "আবার খেলুন", action: () => withAd(() => this.startLevel(this.level)) },
+      secondary: this.level > 1 ? { label: "লেভেল ১ থেকে শুরু", action: () => withAd(() => this.startLevel(1)) } : null,
+    });
+  }
+
+  levelDone() {
+    this.state = "levelup";
+    stopEngine();
+    showOverlay({
+      title: `লেভেল ${bn(this.level)} সম্পন্ন!`,
+      text: "পরের লেভেলে গতি বাড়বে, টানেল সরু হবে।",
+      primary: { label: "পরের লেভেল", action: () => withAd(() => this.startLevel(this.level + 1)) },
+    });
+  }
+
+  update() {
+    if (this.state !== "play") return;
+    const cfg = levelConfig(this.level);
+    this.frame++;
+    this.heli.update(keys, this.frame);
+    setEngine(keys.boost, this.heli.vy);
+    const speed = (cfg.speed + this.score / 400) * (keys.boost ? 1.8 : 1);
+    this.travel += speed;
+    this.tunnel.advance(speed, Math.max(cfg.minGap, 300 - this.score / 5));
+    this.blocks.update(speed, this.tunnel, cfg.blockSpacing);
+    this.score = Math.min(TARGET, Math.floor(this.travel / 25));
+
+    const r = this.heli.rect;
+    if (this.tunnel.hits(r.x, r.w, r.y, r.h) || this.blocks.hits(r)) this.crash();
+    else if (this.score >= TARGET) this.levelDone();
+  }
+
+  draw() {
+    const ctx = this.ctx;
+    ctx.fillStyle = COLORS.sky; ctx.fillRect(0, 0, W, H);
+    this.tunnel.draw(ctx, COLORS.wall);
+    this.blocks.draw(ctx, COLORS.block);
+    this.heli.draw(ctx, this.frame);
+    updateHud(this.level, this.score, TARGET, this.best);
+  }
+
+  run() {
+    // ৬০ বার/সেকেন্ডে আপডেট, ডিসপ্লে ৯০/১২০Hz হলেও গতি একই থাকে
+    const STEP = 1000 / 60;
+    let last = performance.now(), acc = 0;
+    const loop = (now) => {
+      acc += Math.min(100, now - last);
+      last = now;
+      while (acc >= STEP - 2) { this.update(); acc -= STEP; }
+      this.draw();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+}
+
+// ---- main.js ----
+const canvas = document.getElementById("c");
+initInput(canvas, document.getElementById("boost"));
+initAudio();
+
+// স্ক্রিনের আসল মাপ অনুযায়ী ক্যানভাসের রেজোলিউশন (ডেস্কটপে বড় করলেও ঝকঝকে থাকে)
+const ctx = canvas.getContext("2d");
+function fit() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.min(2400, Math.round(canvas.clientWidth * dpr)) || W;
+  if (canvas.width !== w) { canvas.width = w; canvas.height = Math.round(w / 2); }
+  const k = canvas.width / W;
+  ctx.setTransform(k, 0, 0, k, 0, 0);
+}
+new ResizeObserver(fit).observe(canvas);
+fit();
+
+{
+  const hud = document.querySelector(".hud");
+  hud.appendChild(document.getElementById("mute"));
+  if (document.fullscreenEnabled) {           // Android Chrome: ফুলস্ক্রিন + আড়াআড়ি লক
+    const fs = document.createElement("button");
+    fs.type = "button"; fs.className = "mute"; fs.textContent = "⛶"; fs.setAttribute("aria-label", "ফুলস্ক্রিন");
+    fs.addEventListener("click", async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else {
+          await document.documentElement.requestFullscreen();
+          try { await screen.orientation.lock("landscape"); } catch (e) {}
+        }
+      } catch (e) {}
+      fs.blur();
+    });
+    hud.appendChild(fs);
+  }
+  // খেলার সময় স্ক্রিন যেন বন্ধ না হয়
+  let wl = null;
+  const keepAwake = async () => {
+    try {
+      if (navigator.wakeLock && !wl) {
+        wl = await navigator.wakeLock.request("screen");
+        wl.addEventListener("release", () => { wl = null; });
+      }
+    } catch (e) {}
+  };
+  addEventListener("pointerdown", keepAwake);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) keepAwake(); });
+}
+
+const game = new Game(ctx);
+game.showStart();
+game.run();
+</script>
 </body>
 </html>
+
+<!-- npx wrangler deploy --assets=. --name=helicopter-game --compatibility-date=2026-11-18 -->
